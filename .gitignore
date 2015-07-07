@@ -5,3 +5,5 @@
 *init.clj
 
 target
+
+resources/js/out/

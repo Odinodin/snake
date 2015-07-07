@@ -1,12 +1,15 @@
 (ns snake.core)
 
+(enable-console-print!)
+
 (defn empty-board [width height]
   (-> (for [cols (range width)
             rows (range height)]
         [rows cols])
       (zipmap (repeat :empty))))
 
-(def model {:board (empty-board 11 11)})
+(def model {:board (empty-board 11 11)
+            :snake [[0 0] [0 1] [0 2]]})
 
 (def colors {:dark-grey "rgb(30,30,30)"
              :purple    "rgb(186,85,211"
@@ -25,12 +28,22 @@
   (set! context -fillStyle color) (.fillRect context x y width height))
 
 (defn draw-cell [context [x y] cell-value]
-  (fill-rect context (* x 40) (* y 40) (- 40 3) (- 40 3) (:green colors)))
+  (->>
+    (cell-value {:snake :purple
+                 :empty :green})
+    colors
+    (fill-rect context (* x 40) (* y 40) (- 40 3) (- 40 3))))
 
-(defn draw-board [context model]
-  (doseq [[pos value] (:board model)]
+(defn draw-board [context board]
+  (doseq [[pos value] board]
     (draw-cell context pos value)))
 
-(let [context (.getContext canvas "2d")]
-  (clear-canvas context)
-  (draw-board context model))
+(defn compute-board [model]
+  (reduce (fn [board snake-coord] (assoc board snake-coord :snake)) (:board model) (:snake model)))
+
+(defn render [canvas board]
+  (let [context (.getContext canvas "2d")]
+    (clear-canvas context)
+    (draw-board context board)))
+
+(render canvas (compute-board model))
