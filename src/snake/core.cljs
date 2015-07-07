@@ -9,7 +9,8 @@
       (zipmap (repeat :empty))))
 
 (def model {:board (empty-board 11 11)
-            :snake [[0 0] [0 1] [0 2]]})
+            :snake [[0 0] [0 1] [0 2]]
+            :apples #{[5 5] [4 4]}})
 
 (def colors {:dark-grey "rgb(30,30,30)"
              :purple    "rgb(186,85,211"
@@ -29,7 +30,8 @@
 
 (defn draw-cell [context [x y] cell-value]
   (->>
-    (cell-value {:snake :purple
+    (cell-value {:apple :red
+                 :snake :purple
                  :empty :green})
     colors
     (fill-rect context (* x 40) (* y 40) (- 40 3) (- 40 3))))
@@ -38,8 +40,14 @@
   (doseq [[pos value] board]
     (draw-cell context pos value)))
 
+(defn add-to-board [board items new-cell-value]
+  (reduce (fn [board item-coord] (assoc board item-coord new-cell-value)) board items))
+
 (defn compute-board [model]
-  (reduce (fn [board snake-coord] (assoc board snake-coord :snake)) (:board model) (:snake model)))
+  (->
+    (:board model)
+    (add-to-board (:snake model) :snake)
+    (add-to-board (:apples model) :apple)))
 
 (defn render [canvas board]
   (let [context (.getContext canvas "2d")]
